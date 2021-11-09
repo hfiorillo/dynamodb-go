@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awsserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+
 	// "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"strconv"
 )
@@ -80,6 +81,35 @@ func PutItem(person Person) {
 	}
 }
 
+func UpdateItem(person Person) {
+	_, err := dynamo.UpdateItem(&dynamodb.UpdateItemInput{
+		ExpressionAttributeNames: map[string]*string{
+			"#N": aws.String("Name"),
+			"#W": aws.String("Website"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":Name": {
+				S: aws.String(person.Name),
+			},
+			":Website": {
+				S: aws.String(person.Website),
+			},
+		},
+		Key: map[string]*dynamodb.AttributeValue{
+			"Id":{
+				N: aws.String(strconv.Itoa(person.Id))
+			},
+		},
+		TableName: aws.String(TABLE_NAME),
+		UpdateExpression: aws.String("SET #N = :Name, #W = :Website"),
+	})
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			fmt.Println(aerr.Error())
+		}
+	}
+}
 
 func main() {
 	CreateTable()
@@ -91,5 +121,8 @@ func main() {
 	}
 
 	PutItem(person)
+
+	person.Name = "Harry Fiorillo"
+	UpdateItem()
 }
 
