@@ -5,8 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awsserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-
-	// "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"strconv"
 )
 
@@ -111,6 +110,22 @@ func UpdateItem(person Person) {
 	}
 }
 
+func DeleteItem(id int) {
+	_, err := dynamo.DeleteItem(&dynamo.DeleteItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"Id": {
+				N: aws.String(strconv.Itoa(id)),
+			},
+		},
+		TableName: aws.String(TABLE_NAME),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			fmt.Println(aerr.Error())
+		}
+	}
+}
+
 func main() {
 	CreateTable()
 
@@ -124,5 +139,7 @@ func main() {
 
 	person.Name = "Harry Fiorillo"
 	UpdateItem()
+
+	DeleteItem(1)
 }
 
