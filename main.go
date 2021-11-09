@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	// "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	// "strconv"
+	"strconv"
 )
 
 var dynamodb *dynamodb.DynamoDB
@@ -62,13 +62,34 @@ func PutItem(person Person) {
 	_, err := dynamo.PutItem(&dynamodb.PutItemInput{
 		Item: map[string]*dynamodb.AttributeValue {
 			"Id" : {
-				N: aws.String()
-			}
+				N: aws.String(strconv.Itoa(person.Id)),
+			},
+			"Name": {
+				s: aws.String(strconv.Itoa(person.Name)),
+			},
+			"Website": {
+				s: aws.String(strconv.Itoa(person.Website)),
+			},
+		},
+		TableName: aws.String(TABLE_NAME),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			fmt.Println(aerr.Error())
 		}
 	}
 }
 
+
 func main() {
 	CreateTable()
+
+	var person Person = Person {
+		Id: 1,
+		Name: "Harry Example",
+		Website: "fiorillo.co.uk",
+	}
+
+	PutItem(person)
 }
 
