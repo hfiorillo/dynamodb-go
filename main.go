@@ -126,6 +126,30 @@ func DeleteItem(id int) {
 	}
 }
 
+func GetItem(id int)(person Person) {
+	_, err := dynamo.GetItem(&dynamo.GetItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"Id": {
+				N: aws.String(strconv.Itoa(id)),
+			},
+		},
+		TableName: aws.String(TABLE_NAME),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			fmt.Println(aerr.Error())
+		}
+	}
+	err = dynamodbattribute.UnmarshalMap(result.Item, &person)
+	if err != nil{
+		panic(err)
+	}
+
+	return person
+
+}
+
+
 func main() {
 	CreateTable()
 
@@ -134,12 +158,16 @@ func main() {
 		Name: "Harry Example",
 		Website: "fiorillo.co.uk",
 	}
+	fmt.Println(GetItem(1))
 
 	PutItem(person)
+	fmt.Println(GetItem(1))
 
 	person.Name = "Harry Fiorillo"
-	UpdateItem()
+	UpdateItem(person)
+	fmt.Println(GetItem(1))
 
 	DeleteItem(1)
+	fmt.Println(GetItem(1))
 }
 
